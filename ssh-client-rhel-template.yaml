@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: geoq
+metadata:
+  annotations:
+    description: An example GeoQ application with a PostgreSQL database
+    iconClass: icon-python
+    tags: quickstart,python,django,postgresql
+  name: geoq
+  namespace: openshift
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      description: Keeps track of changes in the application image
+    name: ${NAME}
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      description: Defines how to build the application
+    name: rhel-ssh-client
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: rhel-ssh-client:latest
+    source:
+      contextDir: ${CONTEXT_DIR}
+      git:
+        ref: ${SOURCE_REPOSITORY_REF}
+        uri: ${SOURCE_REPOSITORY_URL}
+      type: git
+    strategy:
+      dockerStrategy:
+      type: Docker
+    triggers:
+    - type: ImageChange
+    - type: ConfigChange
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+parameters:
+- description: The URL of the repository with your application source code.
+  displayName: Git Repository URL
+  name: SOURCE_REPOSITORY_URL
+  value: https://github.com/kevensen/openshift-ssh-client.git
+- description: Set this to a branch name, tag or other ref of your repository if you
+    are not using the default branch.
+  displayName: Git Reference
+  name: SOURCE_REPOSITORY_REF
+  value: "master"
+- description: Set this to the relative path to your project if it is not in the root
+    of your repository.
+  displayName: Context Directory
+  name: CONTEXT_DIR
+  value: rhel
