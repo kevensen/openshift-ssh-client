@@ -1,32 +1,31 @@
 apiVersion: v1
 kind: Template
 labels:
-  template: geoq
+  template: ssh-client-rhel
 metadata:
   annotations:
-    description: An example GeoQ application with a PostgreSQL database
-    iconClass: icon-python
-    tags: quickstart,python,django,postgresql
-  name: geoq
-  namespace: openshift
+    description: An SSH client for use inside OpenShift
+    iconClass: icon-shadowman
+    tags: ssh,rhel
+  name: ssh-client-rhel
 objects:
 - apiVersion: v1
   kind: ImageStream
   metadata:
     annotations:
       description: Keeps track of changes in the application image
-    name: ${NAME}
+    name: ssh-client
 - apiVersion: v1
   kind: BuildConfig
   metadata:
     annotations:
       description: Defines how to build the application
-    name: rhel-ssh-client
+    name: ssh-client
   spec:
     output:
       to:
         kind: ImageStreamTag
-        name: rhel-ssh-client:latest
+        name: ssh-client:latest
     source:
       contextDir: ${CONTEXT_DIR}
       git:
@@ -37,11 +36,49 @@ objects:
       dockerStrategy:
       type: Docker
     triggers:
-    - type: ImageChange
     - type: ConfigChange
     - github:
         secret: ${GITHUB_WEBHOOK_SECRET}
       type: GitHub
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the application server
+    name: ssh-client
+  spec:
+    replicas: 1
+    selector:
+      name: ssh-client
+    strategy:
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          name: ssh-client
+        name: ssh-client
+      spec:
+        containers:
+        - image: ssh-client
+          name: ssh-client
+          volumeMounts:
+          - name: secret-volume
+            mountPath: /opt/app-root/.ssh
+            readOnly: true
+        volumes:
+        - name: secret-volume
+          secret:
+            secretName: ssh-secret
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ssh-client
+        from:
+          kind: ImageStreamTag
+          name: ssh-client:latest
+      type: ImageChange
+    - type: ConfigChange
 parameters:
 - description: The URL of the repository with your application source code.
   displayName: Git Repository URL
