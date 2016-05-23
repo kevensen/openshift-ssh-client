@@ -13,9 +13,14 @@ RUN yum clean all && \
     rm -rf /var/cache/yum/* && \
     mkdir /opt/app-root && \
     mkdir /opt/app-root/.ssh && \
-    chmod 0700 /opt/app-root/.ssh && \
+    chmod 700 /opt/app-root/.ssh && \
     useradd -u 1001 -r -g 0 -d ${HOME} -c "Default Application User" default && \
     chown -R 1001:0 /opt/app-root
+
+COPY config ${HOME}/.ssh/
+
+RUN chmod 600 ${HOME}/.ssh/config && \
+    chown 1001:0 ${HOME}/.ssh/config
 
 USER 1001
 
