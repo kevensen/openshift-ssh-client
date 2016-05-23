@@ -12,6 +12,8 @@ RUN yum clean all && \
     yum clean all && \ 
     rm -rf /var/cache/yum/* && \
     mkdir /opt/app-root && \
+    mkdir /opt/app-root/.ssh && \
+    chmod 0700 /opt/app-root/.ssh && \
     useradd -u 1001 -r -g 0 -d ${HOME} -c "Default Application User" default && \
     chown -R 1001:0 /opt/app-root
 
