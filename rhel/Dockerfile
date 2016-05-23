@@ -8,7 +8,7 @@ RUN yum clean all && \
     yum install -y --setopt=tsflags=nodocs \
                    --disablerepo='*' \
                    --enablerepo='rhel-7-server-rpms' \
-                   openssh-clients && \
+                   openssh-clients git && \
     yum clean all && \ 
     rm -rf /var/cache/yum/* && \
     mkdir /opt/app-root && \
